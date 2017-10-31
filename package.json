@@ -1,0 +1,22 @@
+{
+  "name": "explicimate",
+  "version": "1.0.0",
+  "description": "A CLI to scan CSVs of tracks and artists and flag explicit tracks",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nergmada/explicimate.git"
+  },
+  "author": "KCL Radio & Adam Green",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nergmada/explicimate/issues"
+  },
+  "homepage": "https://github.com/nergmada/explicimate#readme",
+  "dependencies": {
+    "commander": "^2.11.0"
+  }
+}
