@@ -2,9 +2,12 @@
   "name": "explicimate",
   "version": "1.0.0",
   "description": "A CLI to scan CSVs of tracks and artists and flag explicit tracks",
-  "main": "index.js",
+  "main": "./lib/explicimate.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel src --copy-files --out-dir lib",
+    "watch": "babel src --copy-files --out-dir lib --watch",
+    "prepublish": "babel src --copy-files --out-dir lib"
   },
   "repository": {
     "type": "git",
@@ -17,6 +20,24 @@
   },
   "homepage": "https://github.com/nergmada/explicimate#readme",
   "dependencies": {
-    "commander": "^2.11.0"
+    "cli-progress": "^1.6.0",
+    "commander": "^2.11.0",
+    "csv-parse": "^2.0.0",
+    "lyrics-fetcher": "^1.0.2",
+    "lyricsapi": "^2.0.0",
+    "natural": "^0.5.4",
+    "node-lyrics": "^1.0.0",
+    "readline-sync": "^1.4.7",
+    "sleep": "^5.1.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.10.4",
+    "babel-eslint": "^6.1.0",
+    "babel-plugin-module-resolver": "^2.7.1",
+    "babel-polyfill": "^6.9.1",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-0": "^6.5.0",
+    "babel-register": "^6.11.5"
   }
 }
