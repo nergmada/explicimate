@@ -11,16 +11,26 @@ const explicitCheck = (tracks, outputDir) => {
     console.log();
     //keep track of number of concurrent calls
     var currentTrack = 0;
-
+    var failedCount = 0;
     //lyr.fetch(tracks[3].Artist, tracks[3].Title, console.log);
     
     var finishedClassification = [];
-
+ 
     const handleTrack = index => {
         lyr.fetch(tracks[index].Artist, tracks[index].Title, (error, result) => {
             trackProgress.increment(1);
             if (result == 'Sorry, We don\'t have lyrics for this song yet.' || result == undefined) {
-                console.log("\nHad trouble finding lyrics");
+                console.log();
+                console.log(error + " - " + result);
+                console.log("Had trouble finding lyrics, will be added as 'unknown', sorry!");
+                finishedClassification.push({ 
+                    Artist: tracks[index].Artist, 
+                    Title: tracks[index].Title, 
+                    Explicit: 'Unknown', 
+                    uniqueProfanities: -1 
+                });
+                failedCount = failedCount + 1;
+                trackProgress.increment(1);
             } else {
                 finishedClassification.push(classify(tracks[index].Artist, tracks[index].Title, result));
             }
@@ -30,13 +40,16 @@ const explicitCheck = (tracks, outputDir) => {
                 handleTrack(nextTrack);
             } else if (currentTrack == tracks.length) {
                 currentTrack = currentTrack + 1;
+                console.log();
                 console.log("Finished cataloging explicit music, I'll write this to a CSV and give you the file path");
                 fs.writeFileSync(outputDir + "Explicit Tracks.csv", 'Title,Artist,Explicit,Profanity Count\n', { encoding: 'UTF-8' });
-                
                 finishedClassification.forEach(track => {
                     const outStr = track.Title + "," + track.Artist + "," + track.Explicit + "," + track.uniqueProfanities + '\n';
-                    fs.appendFileSync(outputDir + "Explicit Tracks.csv", outStr, { encoding: 'UTF-8' });
+                    fs.appendFileSync(outputDir + "/Explicit Tracks.csv", outStr, { encoding: 'UTF-8' });
                 });
+                console.log("All done... Sorry I couldn't help more!");
+                console.log("Out of: " = tracks.length + " I've classified: " + tracks.length - failedCount + " and failed: " + failedCount);
+                process.exit(0);
             }
         });
     }
