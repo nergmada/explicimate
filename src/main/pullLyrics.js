@@ -3,6 +3,8 @@ import lyr from 'lyrics-fetcher';
 import progress from 'cli-progress';
 import fs from 'fs';
 import classify from './classify.js';
+import http from 'http';
+import syncreq from 'sync-request'
 
 const explicitCheck = (tracks, outputDir) => {
     //create progress bar
@@ -22,22 +24,32 @@ const explicitCheck = (tracks, outputDir) => {
             if (result == 'Sorry, We don\'t have lyrics for this song yet.' || result == undefined) {
                 console.log();
                 console.log(error + " - " + result);
-                console.log("Had trouble finding lyrics, will be added as 'unknown', sorry!");
-                finishedClassification.push({ 
-                    Artist: tracks[index].Artist, 
-                    Title: tracks[index].Title, 
-                    Explicit: 'Unknown', 
-                    uniqueProfanities: -1 
-                });
-                failedCount = failedCount + 1;
-                trackProgress.increment(1);
+                console.log("Had trouble finding lyrics, trying a secondary source");
+
+                var secondaryResult = {}; 
+                try {
+                    secondaryResult = JSON.parse(syncreq('GET', 'http://lyric-api.herokuapp.com/api/find/' + tracks[index].Artist + '/' + tracks[index].Title).getBody());
+                } catch (e) {
+                    secondaryResult.err = 'Something went wrong';
+                }
+                if (secondaryResult.err == undefined) {
+                    finishedClassification.push(classify(tracks[index].Artist, tracks[index].Title, secondaryResult.lyric));
+                } else {
+                    console.log("Secondary source failed too... Sorry")
+                    finishedClassification.push({ 
+                        Artist: tracks[index].Artist, 
+                        Title: tracks[index].Title, 
+                        Explicit: 'Unknown', 
+                        uniqueProfanities: -1 
+                    });
+                    failedCount = failedCount + 1;
+                }
+
             } else {
                 finishedClassification.push(classify(tracks[index].Artist, tracks[index].Title, result));
             }
             if (currentTrack < tracks.length) {
-                const nextTrack = currentTrack;
-                currentTrack = currentTrack + 1;
-                handleTrack(nextTrack);
+                handleTrack(++currentTrack);
             } else if (currentTrack == tracks.length) {
                 currentTrack = currentTrack + 1;
                 console.log();
@@ -48,7 +60,7 @@ const explicitCheck = (tracks, outputDir) => {
                     fs.appendFileSync(outputDir + "/Explicit Tracks.csv", outStr, { encoding: 'UTF-8' });
                 });
                 console.log("All done... Sorry I couldn't help more!");
-                console.log("Out of: " = tracks.length + " I've classified: " + tracks.length - failedCount + " and failed: " + failedCount);
+                console.log("Out of: " + tracks.length + " I've classified: " + tracks.length - failedCount + " and failed: " + failedCount);
                 process.exit(0);
             }
         });
